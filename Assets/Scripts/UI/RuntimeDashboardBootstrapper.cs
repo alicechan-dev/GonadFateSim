@@ -31,6 +31,9 @@ namespace GonadFateSim.UI
         private Text pathwayResponseLabel;
         private ReferenceFigurePanel referenceFigurePanel;
         private FigureGuidePanel figureGuidePanel;
+        private HelpAboutPanel helpAboutPanel;
+        private ExitConfirmationDialog exitConfirmationDialog;
+        private AppQuitController appQuitController;
         private GameObject expandedMarkerPanelRoot;
         private MarkerPatternShaderView expandedMarkerPatternView;
         private MarkerChannelViewMode markerChannelViewMode = MarkerChannelViewMode.Merged;
@@ -79,6 +82,11 @@ namespace GonadFateSim.UI
             EnsureEventSystem();
 
             Canvas canvas = CreateCanvas();
+            canvas.gameObject.AddComponent<ModalManager>();
+            appQuitController = canvas.gameObject.AddComponent<AppQuitController>();
+            GlobalInputController inputController = canvas.gameObject.AddComponent<GlobalInputController>();
+            inputController.Bind(appQuitController);
+
             RectTransform root = CreatePanel("Dashboard", canvas.transform, new Color(0.08f, 0.1f, 0.12f, 0.96f));
             Stretch(root, Vector2.zero, Vector2.one, new Vector2(16f, 16f), new Vector2(-16f, -16f));
 
@@ -88,6 +96,7 @@ namespace GonadFateSim.UI
             Text subtitle = CreateText("Subtitle", root, "Educational abstraction. Not a medical or laboratory tool.", 15, FontStyle.Normal, TextAnchor.MiddleLeft);
             subtitle.color = new Color(0.74f, 0.8f, 0.86f);
             Anchor(subtitle.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(22f, -92f), new Vector2(-20f, -62f));
+            BuildUtilityControls(root);
 
             RectTransform left = CreatePanel("Parameters", root, new Color(0.12f, 0.15f, 0.18f, 1f));
             Anchor(left, new Vector2(0f, 0.18f), new Vector2(0.25f, 0.86f), new Vector2(20f, 0f), new Vector2(-8f, 0f));
@@ -111,6 +120,21 @@ namespace GonadFateSim.UI
             BuildTimeline(bottom);
             BuildReferenceFigurePanels(root);
             BuildExpandedMarkerPatternPanel(root);
+            helpAboutPanel = BuildHelpAboutPanel(root);
+            exitConfirmationDialog = BuildExitConfirmationDialog(root);
+            appQuitController.Bind(exitConfirmationDialog);
+        }
+
+        private void BuildUtilityControls(RectTransform root)
+        {
+            RectTransform utilityPanel = CreatePanel("Utility Controls", root, new Color(0.08f, 0.1f, 0.12f, 0f));
+            Anchor(utilityPanel, new Vector2(0.78f, 0.885f), new Vector2(0.985f, 0.97f), Vector2.zero, Vector2.zero);
+
+            Button helpButton = CreateButton(utilityPanel, "Help / About", new Vector2(0f, 0.12f), new Vector2(0.54f, 0.88f));
+            helpButton.onClick.AddListener(() => helpAboutPanel?.Open());
+
+            Button exitButton = CreateButton(utilityPanel, "Exit", new Vector2(0.6f, 0.12f), new Vector2(1f, 0.88f));
+            exitButton.onClick.AddListener(() => appQuitController?.RequestExit());
         }
 
         private void BuildParameterPanel(RectTransform parent)
@@ -216,7 +240,7 @@ namespace GonadFateSim.UI
             visualStateDebugLabel.color = new Color(0.58f, 0.68f, 0.76f);
 
             Button expandButton = CreateButton(parent, "Expand Marker Pattern", new Vector2(0.52f, 0.315f), new Vector2(0.92f, 0.36f));
-            expandButton.onClick.AddListener(() => expandedMarkerPanelRoot?.SetActive(true));
+            expandButton.onClick.AddListener(OpenExpandedMarkerPattern);
 
             GameObject viewObject = new GameObject("Marker Pattern View", typeof(MarkerPatternShaderView));
             viewObject.transform.SetParent(parent, false);
@@ -243,7 +267,7 @@ namespace GonadFateSim.UI
             Anchor(largePanel, new Vector2(0.04f, 0.16f), new Vector2(0.78f, 0.84f), Vector2.zero, Vector2.zero);
 
             Button closeButton = CreateButton(sidebar, "Close", new Vector2(0.08f, 0.91f), new Vector2(0.92f, 0.975f));
-            closeButton.onClick.AddListener(() => expandedMarkerPanelRoot.SetActive(false));
+            closeButton.onClick.AddListener(CloseExpandedMarkerPattern);
             Text channelTitle = CreateTextBlock(sidebar, "Channels", new Vector2(0.08f, 0.82f), new Vector2(0.92f, 0.875f), 15);
             channelTitle.fontStyle = FontStyle.Bold;
             CreateMarkerChannelButtons(sidebar, 0.745f);
@@ -264,6 +288,67 @@ namespace GonadFateSim.UI
             expandedMarkerPatternView.Bind(largePanel, markerState, interpretation);
             expandedMarkerPatternView.SetChannelViewMode(markerChannelViewMode);
 
+            expandedMarkerPanelRoot.SetActive(false);
+        }
+
+        private HelpAboutPanel BuildHelpAboutPanel(RectTransform root)
+        {
+            RectTransform overlay = CreatePanel("About Simulator Modal", root, new Color(0.02f, 0.025f, 0.03f, 0.97f));
+            Stretch(overlay, Vector2.zero, Vector2.one, new Vector2(220f, 120f), new Vector2(-220f, -120f));
+
+            Text title = CreateTextBlock(overlay, "About This Simulator", new Vector2(0.08f, 0.86f), new Vector2(0.74f, 0.95f), 26);
+            title.fontStyle = FontStyle.Bold;
+
+            Button closeButton = CreateButton(overlay, "Close", new Vector2(0.82f, 0.88f), new Vector2(0.94f, 0.94f));
+            Text body = CreateTextBlock(overlay, string.Empty, new Vector2(0.08f, 0.14f), new Vector2(0.92f, 0.82f), 17);
+            body.color = new Color(0.9f, 0.94f, 0.98f);
+
+            HelpAboutPanel panel = overlay.gameObject.AddComponent<HelpAboutPanel>();
+            panel.Bind(overlay.gameObject, body);
+            closeButton.onClick.AddListener(panel.Close);
+            return panel;
+        }
+
+        private ExitConfirmationDialog BuildExitConfirmationDialog(RectTransform root)
+        {
+            RectTransform overlay = CreatePanel("Exit Confirmation Modal", root, new Color(0.02f, 0.025f, 0.03f, 0.98f));
+            Anchor(overlay, new Vector2(0.34f, 0.34f), new Vector2(0.66f, 0.66f), Vector2.zero, Vector2.zero);
+
+            Text title = CreateTextBlock(overlay, "Exit Simulator?", new Vector2(0.08f, 0.68f), new Vector2(0.92f, 0.88f), 24);
+            title.fontStyle = FontStyle.Bold;
+
+            Text message = CreateTextBlock(overlay, "Are you sure you want to exit? No simulation data is saved.", new Vector2(0.08f, 0.38f), new Vector2(0.92f, 0.62f), 16);
+            message.color = new Color(0.9f, 0.94f, 0.98f);
+
+            Button cancelButton = CreateButton(overlay, "Cancel", new Vector2(0.08f, 0.12f), new Vector2(0.44f, 0.28f));
+            Button exitButton = CreateButton(overlay, "Exit", new Vector2(0.56f, 0.12f), new Vector2(0.92f, 0.28f));
+
+            ExitConfirmationDialog dialog = overlay.gameObject.AddComponent<ExitConfirmationDialog>();
+            dialog.Bind(overlay.gameObject, appQuitController);
+            cancelButton.onClick.AddListener(dialog.Close);
+            exitButton.onClick.AddListener(dialog.ConfirmExit);
+            return dialog;
+        }
+
+        private void OpenExpandedMarkerPattern()
+        {
+            if (expandedMarkerPanelRoot == null)
+            {
+                return;
+            }
+
+            expandedMarkerPanelRoot.SetActive(true);
+            ModalManager.Instance?.RegisterOpen(expandedMarkerPanelRoot, CloseExpandedMarkerPattern);
+        }
+
+        private void CloseExpandedMarkerPattern()
+        {
+            if (expandedMarkerPanelRoot == null)
+            {
+                return;
+            }
+
+            ModalManager.Instance?.Unregister(expandedMarkerPanelRoot);
             expandedMarkerPanelRoot.SetActive(false);
         }
 

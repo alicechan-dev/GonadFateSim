@@ -117,9 +117,48 @@ Timeline playback should animate conceptual state transitions, not real developm
 
 ## Reset
 
-Reset should restore the default educational scenario and clear comparison state if requested.
+Reset should restore the default / Normal XY-style educational scenario and clear comparison state if requested.
 
 Reset must be easy to find, because users should be encouraged to explore without fear of breaking the model.
+
+Reset must not quit the app, remove reference/source links, or close documentation panels unexpectedly.
+
+## Global Exit and Modal Handling
+
+The simulator should provide an explicit `Exit` button and keyboard escape behavior.
+
+`Esc` priority:
+
+```text
+Esc pressed
+↓
+if any modal is open:
+    close topmost modal
+else:
+    show Exit Simulator? confirmation dialog
+```
+
+The exit dialog should include:
+
+- title: `Exit Simulator?`;
+- message: `Are you sure you want to exit? No simulation data is saved.`;
+- buttons: `Cancel` and `Exit`.
+
+In standalone builds, confirmed exit calls `Application.Quit()`. In the Unity Editor, confirmed exit should stop Play Mode if possible.
+
+All modals should register with a common modal manager so Reference Figure, Figure Reading Guide, Synthetic Marker Pattern, Help/About, and Exit confirmation close consistently.
+
+## Help / About
+
+The Help/About panel should be accessible from the main dashboard and explain:
+
+- this is an educational Unity simulator for mouse developmental biology;
+- gene/pathway activity, gonadal fate, and marker-pattern interpretation are simplified visual relationships;
+- the app is not a medical tool;
+- the app is not a laboratory protocol;
+- the app does not provide gene editing, CRISPR, animal procedure, surgery, injection, or human-application guidance;
+- synthetic marker patterns are educational abstractions, not real microscopy;
+- mouse-model findings must not be treated as direct human clinical guidance.
 
 ## Interaction Language
 

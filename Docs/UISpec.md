@@ -25,6 +25,13 @@ The dashboard view should be split into four zones:
 
 The UI should feel like a simulator control surface, not a medical tool.
 
+The top-right utility area should include:
+
+- `Help / About`;
+- `Exit`.
+
+These controls should remain visible while the main dashboard is usable.
+
 ## Left Panel: Parameters
 
 Sliders:
@@ -46,6 +53,8 @@ Scenario buttons:
 - Reset.
 
 Each slider should show a normalized value from `0.0` to `1.0`. Scenario buttons should apply safe educational presets only.
+
+`Reset` restores the documented default / Normal XY-style educational parameters. It does not quit the app, remove source links, or clear documentation.
 
 ## Center Panel: Pathway Graph
 
@@ -115,6 +124,28 @@ The current step can be highlighted based on the selected parameter focus. For e
 The UI should respond instantly to parameter changes. No user action should imply real-world intervention, treatment, editing, or experiment planning.
 
 Labels should use model language such as "pathway strength", "timing", "score", "bias", and "educational outcome".
+
+## Public Prototype Modal and Exit Behavior
+
+The first public/prototype version must avoid trapping the user in fullscreen or modal UI.
+
+Required behavior:
+
+- all modals have visible `Close` or `Cancel` controls;
+- `Esc` closes the topmost modal;
+- if no modal is open, `Esc` opens the `Exit Simulator?` confirmation dialog;
+- `Exit` opens the same confirmation dialog;
+- `Cancel` closes the dialog;
+- confirming exit quits standalone builds and stops Play Mode in the Unity Editor;
+- no modal opens by default on startup.
+
+Exit confirmation text:
+
+```text
+Are you sure you want to exit? No simulation data is saved.
+```
+
+The Help/About modal should state that the simulator is educational, mouse-model focused, not medical, not a lab protocol, and not human-application guidance.
 
 ## Layer Toggles
 

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using GonadFateSim.UI;
 
 namespace GonadFateSim.ReferenceFigures
 {
@@ -39,6 +40,7 @@ namespace GonadFateSim.ReferenceFigures
             if (panelRoot != null)
             {
                 panelRoot.SetActive(true);
+                ModalManager.Instance?.RegisterOpen(panelRoot, Close);
             }
         }
 
@@ -46,6 +48,7 @@ namespace GonadFateSim.ReferenceFigures
         {
             if (panelRoot != null)
             {
+                ModalManager.Instance?.Unregister(panelRoot);
                 panelRoot.SetActive(false);
             }
         }

@@ -32,8 +32,27 @@ The simulator may include visual layers for:
 - scenario comparison.
 - real reference figure viewing with attribution;
 - simulated marker-pattern schematics.
+- help/about and exit controls for safe prototype use.
 
 These visuals are educational abstractions. They are not anatomical training tools, medical predictions, experimental plans, or human-application guides.
+
+## Public Prototype Safety UX
+
+The prototype should always let users:
+
+- close the current modal;
+- press `Esc` to leave modal UI;
+- open Help/About scope information;
+- request app exit through a confirmation dialog;
+- reset parameters without losing reference links or documentation.
+
+The Help/About panel must plainly state that the simulator is educational, mouse-model focused, not medical, not a laboratory protocol, and not human-application guidance.
+
+The Exit confirmation should avoid implying that simulation data is stored:
+
+```text
+Are you sure you want to exit? No simulation data is saved.
+```
 
 ## Reference Figure and Marker Pattern Boundary
 
